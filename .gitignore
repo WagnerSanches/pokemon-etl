@@ -1,10 +1,7 @@
-# Cache de dados brutos da API/CSV — reconstituível via extrair.py (exigido pelo enunciado)
 dados_brutos/
 
-# Documentação interna do grupo — notas de apoio, não é o entregável oficial (README.md/RELATORIO.md ficam na raiz)
 docs/
 
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -15,23 +12,18 @@ venv/
 env/
 pip-log.txt
 
-# Variáveis de ambiente / credenciais
 .env
 .env.*
 !.env.example
 
-# Docker
 docker-compose.override.yml
 
-# Bancos de dados locais (caso algum client grave dump/volume aqui)
 *.sql.bak
 pgdata/
 mongodata/
 
-# IDE
 .vscode/
 .idea/
 
-# Sistema operacional
 .DS_Store
 Thumbs.db
