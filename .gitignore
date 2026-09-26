@@ -2,6 +2,8 @@ dados_brutos/
 
 docs/
 
+docker/
+
 __pycache__/
 *.py[cod]
 *$py.class
@@ -11,12 +13,6 @@ __pycache__/
 venv/
 env/
 pip-log.txt
-
-.env
-.env.*
-!.env.example
-
-docker-compose.override.yml
 
 *.sql.bak
 pgdata/
