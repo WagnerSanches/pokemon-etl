@@ -19,9 +19,9 @@ MAX_TENTATIVAS_429 = 3
 ESPERA_429_SEGUNDOS = 5
 
 ESPECIES_VALIDAS = range(1, 722)
-TIPOS_VALIDOS = range(1, 21)
+TIPOS_VALIDOS = list(range(1, 20)) + [10001, 10002]
 
-MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://pokemon:pokemon@localhost:27017/?authSource=admin")
 MONGO_DB = "pokedex_bronze"
 
 
@@ -86,7 +86,10 @@ def upsert_bronze(colecao, _id, doc_fonte, fonte, url_ou_caminho):
         "_ingerido_em": timestamp_atual(),
     }
     doc.update(doc_fonte)
-    colecao.update_one({"_id": _id}, {"$set": doc}, upsert=True)
+    # replace_one (não update_one com $set): campos com "." no nome, como
+    # "Sp. Atk" do pokemon.csv, seriam interpretados por $set como caminho
+    # aninhado ("Sp" -> {" Atk": ...}) em vez de campo literal.
+    colecao.replace_one({"_id": _id}, doc, upsert=True)
 
 def id_da_url(url):
     return url.rstrip("/").rsplit("/", 1)[-1]
