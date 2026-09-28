@@ -8,13 +8,13 @@ estrela) e publica agregados prontos para consulta.
 
 ## 1. Procedimento de execução
 
-Pré-requisitos: Docker, Python 3.
+Pré-requisitos: MongoDB e PostgreSQL em execução (máquina virtual da
+disciplina ou instalação local), Python 3, banco `pokedex` já criado no
+PostgreSQL.
 
 ```bash
-cd docker
-cp .env.example .env        # ajustar senhas se desejar; valores padrão já funcionam localmente
-docker compose up -d        # sobe MongoDB (27017) e PostgreSQL (5432) vazios
-cd ..
+export MONGO_URI="mongodb://usuario:senha@host:27017/?authSource=admin"   # ajustar ao ambiente
+export POSTGRES_DSN="postgresql://usuario:senha@host:5432/pokedex"        # ajustar ao ambiente
 
 pip install -r requirements.txt
 
@@ -23,6 +23,10 @@ python carregar.py          # bronze -> silver (PostgreSQL schema silver)
 python publicar.py          # silver -> gold (PostgreSQL schema gold)
 ```
 
+Sem as variáveis de ambiente acima, os scripts usam por padrão
+`mongodb://pokemon:pokemon@localhost:27017/?authSource=admin` e
+`postgresql://pokemon:pokemon@localhost:5432/pokedex`.
+
 As consultas finais estão em `sql/consultas.sql` (rodar com `psql` ou qualquer
 cliente SQL apontando para o banco `pokedex`).
 
@@ -30,7 +34,7 @@ Para validar do zero (o mesmo cenário da correção — duas execuções
 consecutivas a partir de bancos vazios):
 
 ```bash
-docker compose down -v && docker compose up -d   # reseta Mongo e Postgres
+# limpar/recriar o banco pokedex_bronze (MongoDB) e o banco pokedex (PostgreSQL)
 python extrair.py && python carregar.py && python publicar.py
 python extrair.py && python carregar.py && python publicar.py   # 2a execução: não duplica nada
 ```
@@ -179,10 +183,6 @@ no `RELATORIO.md`.
 
 ## 7. Decisões de projeto não especificadas pelo enunciado
 
-- **Docker Compose** para MongoDB + PostgreSQL (o enunciado permite
-  qualquer forma de execução, seção 5.1). `docker/docker-compose.yml` e
-  `docker/.env.example` são versionados; `docker/.env` (senhas locais) é
-  ignorado.
 - **Driver `psycopg` (v3) com o extra `[binary]`** — evita depender de
   `libpq-dev` instalado no sistema para compilar a extensão C; ainda é
   exatamente o driver `psycopg` citado no R11, só empacotado com o binário
