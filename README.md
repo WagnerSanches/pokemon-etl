@@ -2,7 +2,7 @@
 
 **Integrantes:** Wagner Aguiar Sanches Garcia Sobrinho
 
-Pipeline ETL com arquitetura medalhão (EP01 — Ciência de Dados): extrai a
+Pipeline ETL com arquitetura medalhão (EP01, Ciência de Dados): extrai a
 PokéAPI e dois CSVs de batalhas, concilia e modela em PostgreSQL (esquema
 estrela), publica agregados para consulta.
 
@@ -41,7 +41,7 @@ O JSON da PokéAPI é aninhado e heterogêneo: cada espécie pode ter só uma
 forma ou mais de quinze, os atributos de combate vêm em listas de
 sub-objetos, e a matriz de efetividade de tipos é composta por seis listas
 de tamanho variável. Guardar isso em tabelas relacionais exigiria decidir a
-normalização antes de saber o que a camada seguinte vai precisar — o
+normalização antes de saber o que a camada seguinte vai precisar. É o
 acoplamento que a arquitetura medalhão evita. Um banco de documentos aceita
 o JSON como veio; o modelo relacional pode ser refeito sem nova consulta à
 API.
@@ -73,7 +73,7 @@ API.
 ```
 
 A dimensão de Pokémon é referenciada duas vezes pela fato, em papéis
-diferentes — dimensão papel.
+diferentes: dimensão papel.
 
 ## 4. As 6 decisões de modelagem
 
@@ -87,7 +87,7 @@ diferentes — dimensão papel.
    análise 5.
 
 3. **Efetividade de tipos como tabela ponte** (324 linhas: 18 tipos
-   atacantes por 18 defensores). Descartei coluna computada na fato —
+   atacantes por 18 defensores). Descartei coluna computada na fato: ela
    fixaria o multiplicador no momento da carga. Defensor com dois tipos:
    multiplica os dois fatores uma vez, na hora de publicar o gold.
 
@@ -97,7 +97,7 @@ diferentes — dimensão papel.
 
 5. **Status só na dimensão de Pokémon**, sem duplicar na fato (exceto a
    diferença de velocidade da decisão 2). A análise 2 é sobre cadastro, não
-   sobre combate — não precisa da fato.
+   sobre combate, e não precisa da fato.
 
 6. **Categoria de raridade derivada na carga** (comum, lendário, mítico,
    baby, a partir dos indicadores booleanos que a PokéAPI já fornece).
@@ -106,7 +106,7 @@ diferentes — dimensão papel.
 
 ### Tipos extras (`stellar`, `unknown`, `shadow`)
 
-Ficam na bronze, por fidelidade — a API retorna 21 tipos, não filtramos a
+Ficam na bronze, por fidelidade: a API retorna 21 tipos, e não filtro a
 fonte. Saem do modelo relacional: não têm relação de dano nos dados
 retornados, e nenhum dos 800 Pokémon do CSV usa esses tipos.
 
@@ -116,7 +116,7 @@ retornados, e nenhum dos 800 Pokémon do CSV usa esses tipos.
 
 Usa o habitat, atributo que nenhuma das 7 análises obrigatórias toca.
 Também é a única que mostra como o modelo trata o habitat nulo (inaplicável
-pra espécies mais recentes) — essa ausência vira uma categoria própria na
+pra espécies mais recentes): essa ausência vira uma categoria própria na
 contagem, nunca some. O único registro não conciliado com a PokéAPI recebe
 o mesmo tratamento, com sua própria categoria.
 
@@ -129,7 +129,7 @@ Tabela própria no gold. Resultado no RELATORIO.md.
 
 - **Bronze**: cada documento é identificado pela própria chave de origem, e
   a gravação sempre substitui o documento inteiro em vez de mesclar campo a
-  campo — evita corromper campos com ponto no nome, como os do CSV
+  campo, evitando corromper campos com ponto no nome, como os do CSV
   original. O cache local evita repetir requisições à PokéAPI.
 - **Silver**: cada dimensão tem restrição de unicidade na chave de origem,
   e a carga atualiza em vez de duplicar quando encontra conflito. A fato
@@ -142,7 +142,7 @@ Tabela própria no gold. Resultado no RELATORIO.md.
 
 - **Driver de PostgreSQL com binário pré-compilado**, pra não depender de
   bibliotecas de sistema pra compilar a extensão C.
-- **Faixas de velocidade (análise 5)**: 5 faixas simétricas, corte em 50 —
+- **Faixas de velocidade (análise 5)**: 5 faixas simétricas, corte em 50,
   mesma ordem de grandeza da maior velocidade base (~180).
 - **Corte de 50 combates (análise 3)**: média é ~125/Pokémon; 50 filtra
   amostra insuficiente sem cortar quem está abaixo da média. Fica como
